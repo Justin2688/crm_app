@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9Brains CRM - Dark Mode</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+        }
+        h1, h2 {
+            color: #bb86fc;
+        }
+        input, button {
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        .client-list {
+            margin-top: 20px;
+        }
+        .client {
+            background-color: #1e1e1e;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .client-actions {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to 9Brain's CRM</h1>
+
+    <!-- Form to Add a New Client -->
+    <h2>Add New Client</h2>
+    <form id="addClientForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br>
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone"><br>
+        <label for="company">Company:</label>
+        <input type="text" id="company"><br>
+        <label for="company_size">Company Size (Annual Revenue):</label>
+        <input type="text" id="company_size"><br>
+        <label for="budget">Budget:</label>
+        <input type="text" id="budget"><br>
+        <label for="industry">Industry:</label>
+        <input type="text" id="industry"><br>
+        <label for="compliance_needs">Compliance Needs:</label>
+        <input type="text" id="compliance_needs"><br>
+        <label for="initial_outreach_date">Initial Outreach Date:</label>
+        <input type="date" id="initial_outreach_date"><br>
+        <label for="last_contact_date">Last Contact Date:</label>
+        <input type="date" id="last_contact_date"><br>
+        <label for="sale_closing_date">Sale Closing Date:</label>
+        <input type="date" id="sale_closing_date"><br>
+        <button type="submit">Add Client</button>
+    </form>
+
+    <!-- Container to Display Clients -->
+    <h2>Client List</h2>
+    <button id="loadClients">Load Clients</button>
+    <div id="clientList" class="client-list"></div>
+
+    <script>
+        // Add a New Client
+        $('#addClientForm').on('submit', function(e) {
+            e.preventDefault();
+            const clientData = {
+                name: $('#name').val(),
+                email: $('#email').val(),
+                phone: $('#phone').val(),
+                company: $('#company').val(),
+                company_size: $('#company_size').val(),
+                budget: $('#budget').val(),
+                industry: $('#industry').val(),
+                compliance_needs: $('#compliance_needs').val(),
+                initial_outreach_date: $('#initial_outreach_date').val(),
+                last_contact_date: $('#last_contact_date').val(),
+                sale_closing_date: $('#sale_closing_date').val()
+            };
+            
+            $.ajax({
+                url: '/api/clients',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(clientData),
+                success: function(response) {
+                    alert('Client added successfully');
+                    $('#addClientForm')[0].reset();
+                    loadClients();
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.responseJSON.error);
+                }
+            });
+        });
+
+        // Load Clients
+        function loadClients() {
+            $.ajax({
+                url: '/api/clients',
+                method: 'GET',
+                success: function(response) {
+                    let clientsHtml = '';
+                    response.forEach(function(client) {
+                        clientsHtml += `<div class="client">
+                                            <strong>${client.name}</strong> - ${client.email} - ${client.company} - ${client.status}<br>
+                                            Phone: ${client.phone}<br>
+                                            Company Size: ${client.company_size}<br>
+                                            Budget: ${client.budget}<br>
+                                            Industry: ${client.industry}<br>
+                                            Compliance Needs: ${client.compliance_needs}<br>
+                                            Initial Outreach Date: ${client.initial_outreach_date}<br>
+                                            Last Contact Date: ${client.last_contact_date}<br>
+                                            Sale Closing Date: ${client.sale_closing_date}<br>
+                                            <div class="client-actions">
+                                                <button onclick="editClient(${client.id})">Edit</button>
+                                                <button onclick="deleteClient(${client.id})">Delete</button>
+                                            </div>
+                                            <div id="editClientForm${client.id}" class="edit-client-form" style="display: none;">
+                                                <h3>Edit Client</h3>
+                                                <label for="name">Name:</label>
+                                                <input type="text" id="editName${client.id}" value="${client.name}"><br>
+                                                <label for="email">Email:</label>
+                                                <input type="email" id="editEmail${client.id}" value="${client.email}"><br>
+                                                <label for="phone">Phone:</label>
+                                                <input type="text" id="editPhone${client.id}" value="${client.phone}"><br>
+                                                <label for="company">Company:</label>
+                                                <input type="text" id="editCompany${client.id}" value="${client.company}"><br>
+                                                <label for="company_size">Company Size (Annual Revenue):</label>
+                                                <input type="text" id="editCompanySize${client.id}" value="${client.company_size}"><br>
+                                                <label for="budget">Budget:</label>
+                                                <input type="text" id="editBudget${client.id}" value="${client.budget}"><br>
+                                                <label for="industry">Industry:</label>
+                                                <input type="text" id="editIndustry${client.id}" value="${client.industry}"><br>
+                                                <label for="compliance_needs">Compliance Needs:</label>
+                                                <input type="text" id="editComplianceNeeds${client.id}" value="${client.compliance_needs}"><br>
+                                                <label for="status">Status:</label>
+                                                <input type="text" id="editStatus${client.id}" value="${client.status}"><br>
+                                                <label for="initial_outreach_date">Initial Outreach Date:</label>
+                                                <input type="date" id="editInitialOutreachDate${client.id}" value="${client.initial_outreach_date}"><br>
+                                                <label for="last_contact_date">Last Contact Date:</label>
+                                                <input type="date" id="editLastContactDate${client.id}" value="${client.last_contact_date}"><br>
+                                                <label for="sale_closing_date">Sale Closing Date:</label>
+                                                <input type="date" id="editSaleClosingDate${client.id}" value="${client.sale_closing_date}"><br>
+                                                <button onclick="updateClient(${client.id})">Update</button>
+                                            </div>
+                                        </div>`;
+                    });
+                    $('#clientList').html(clientsHtml);
+                },
+                error: function() {
+                    alert('Error loading clients');
+                }
+            });
+        }
+
+        $('#loadClients').on('click', function() {
+            loadClients();
+        });
+
+        // Edit Client
+        function editClient(clientId) {
+            $(`#editClientForm${clientId}`).toggle();
+        }
+
+        // Update Client
+        function updateClient(clientId) {
+            const updatedData = {
+                name: $(`#editName${clientId}`).val(),
+                email: $(`#editEmail${clientId}`).val(),
+                phone: $(`#editPhone${clientId}`).val(),
+                company: $(`#editCompany${clientId}`).val(),
+                company_size: $(`#editCompanySize${clientId}`).val(),
+                budget: $(`#editBudget${clientId}`).val(),
+                industry: $(`#editIndustry${clientId}`).val(),
+                compliance_needs: $(`#editComplianceNeeds${clientId}`).val(),
+                status: $(`#editStatus${clientId}`).val(),
+                initial_outreach_date: $(`#editInitialOutreachDate${clientId}`).val(),
+                last_contact_date: $(`#editLastContactDate${clientId}`).val(),
+                sale_closing_date: $(`#editSaleClosingDate${clientId}`).val()
+            };
+
+            $.ajax({
+                url: `/api/clients/${clientId}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedData),
+                success: function(response) {
+                    alert('Client updated successfully');
+                    loadClients();
+                },
+                error: function() {
+                    alert('Error updating client');
+                }
+            });
+        }
+
+        // Delete Client
+        function deleteClient(clientId) {
+            if (confirm('Are you sure you want to delete this client?')) {
+                $.ajax({
+                    url: `/api/clients/${clientId}`,
+                    method: 'DELETE',
+                    success: function(response) {
+                        alert('Client deleted successfully');
+                        loadClients();
+                    },
+                    error: function() {
+                        alert('Error deleting client');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+
